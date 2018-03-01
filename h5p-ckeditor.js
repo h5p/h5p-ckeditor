@@ -148,9 +148,6 @@ H5P.CKEditor = (function (EventDispatcher, $) {
         // Create the CKEditor instance
         ckInstance = window.CKEDITOR.replace($target.get(0), config);
         ckInstance.setData(data);
-
-        // Forward blur event
-        ckInstance.on('blur', self.trigger.bind(self, 'blur'));
       }, 50);
     };
 
