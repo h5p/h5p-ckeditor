@@ -103,18 +103,23 @@ H5P.CKEditor = (function (EventDispatcher, $) {
 
   /**
    * Constructor
-   * @param {[type]} editorName [description]
-   *
+   * @param {string} targetId The id of the DOM lement beeing replaced by CK
+   * @param {string} languageCode The two letter language code
+   * @param {H5P.jQuery} dialogContainer The DOM element the CK editor
+   *                                     dialogs should be attached to
+   * @param {string} [initialContent] The inital content of CK
+   * @param {Object} [config] Configuration options for CK. If not set, the
+   *                          DefaultCKEditorConfig will be used
    * @constructor
    */
-  function CKEditor(targetId, languageCode, $dialogContainer, config) {
+  function CKEditor(targetId, languageCode, $dialogContainer, initialContent, config) {
     EventDispatcher.call(this);
 
     var self = this;
     var ckInstance;
     var currentCkEditorDialog;
     var state = DESTROYED;
-    var data;
+    var data = initialContent;
 
     config = config || DefaultCKEditorConfig;
     config.defaultLanguage = config.language = languageCode;
