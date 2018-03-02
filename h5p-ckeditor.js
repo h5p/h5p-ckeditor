@@ -50,6 +50,9 @@ H5P.CKEditor = (function (EventDispatcher, $) {
 
         CKEDITOR.verbosity = 0;
 
+        // Make sure contenteditable divs are not automatically made into CKs
+        CKEDITOR.disableAutoInline = true;
+
         // An editor instance is created
         CKEDITOR.on('instanceReady', function(event) {
           listener = listeners[event.editor.name];
