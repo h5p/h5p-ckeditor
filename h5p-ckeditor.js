@@ -6,8 +6,7 @@ H5P.CKEditor = (function (EventDispatcher, $) {
       { name: 'document', groups: [ 'mode', 'document', 'doctools' ] },
       { name: 'styles', groups: [ 'styles' ] },
       { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
-      { name: 'clipboard', groups: [ 'clipboard', 'undo' ] },
-      { name: 'editing', groups: [ 'find', 'selection', 'spellchecker', 'editing' ] },
+      { name: 'editing', groups: [ 'find', 'selection', 'editing' ] },
       { name: 'forms', groups: [ 'forms' ] },
       { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },
       { name: 'colors', groups: [ 'colors' ] },
@@ -22,7 +21,8 @@ H5P.CKEditor = (function (EventDispatcher, $) {
     resize_enabled: false,
     linkShowAdvancedTab: false,
     linkShowTargetTab: false,
-    removeButtons: 'Cut,Copy,Paste,Undo,Redo,Anchor,Subscript,Superscript,Font,BulletedList,NumberedList,Outdent,Indent,About'
+    forcePasteAsPlainText: true,
+    removeButtons: 'Blockquote,Source,HorizontalRule,RemoveFormat,SpecialChar,Maximize,Image,Cut,Copy,Paste,Undo,Redo,Anchor,Subscript,Superscript,Font,BulletedList,NumberedList,Outdent,Indent,About'
   };
 
   // Contains a "global" mapping between editor names and callback functions
