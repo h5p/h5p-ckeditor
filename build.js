@@ -8,6 +8,8 @@ const files = [
   'plugins/dialog',
   'plugins/link',
   'plugins/table',
+  'plugins/tableselection',
+  'plugins/scayt',
   'plugins/icons_hidpi.png',
   'plugins/icons.png',
   'skins/moono-lisa',
