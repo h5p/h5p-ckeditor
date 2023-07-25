@@ -15,5 +15,10 @@
     {
       "path": "h5p-ckeditor.js"
     }
+  ],
+  "preloadedCss": [
+    {
+      "path": "h5p-ckeditor.css"
+    }
   ]
 }
