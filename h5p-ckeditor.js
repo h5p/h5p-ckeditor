@@ -2,10 +2,16 @@ H5P.CKEditor = (function (EventDispatcher, $) {
 
   const DefaultCKEditorConfig = {
     removePlugins: ['MathType'],
+    updateSourceElementOnDestroy: true,
+    startupFocus: true,
     toolbar: [
       'style', 'heading', '|', 'bold', 'italic', 'underline', 'strikeThrough', '|', 'link', '|', 'insertTable'
     ],
   }
+
+  const DESTROYED = 0;
+  const CREATED = 1;
+  const DESTROYING = 2;
   
   /**
    * Constructor
@@ -23,17 +29,23 @@ H5P.CKEditor = (function (EventDispatcher, $) {
 
     let self = this;
     let ckInstance;
-    const data = initialContent;
+    let data = initialContent;
 
-    config = config || DefaultCKEditorConfig;
+    let state = DESTROYED;
+
+    config = DefaultCKEditorConfig;
     config.defaultLanguage = config.language = languageCode;
 
-    const initCKEditor = function () {
+    const setState = function (newState) {
+      state = newState;
+    };
+
+    const initCKEditor = function (resolve) {
       let $target = $('#' + targetId);
 
       // Abort if target is gone
-      if(!$target.is(':visible')) {
-        return ;
+      if (!$target.is(':visible')) {
+        return;
       }
 
       // Create the CKEditor instance
@@ -43,7 +55,12 @@ H5P.CKEditor = (function (EventDispatcher, $) {
         editor.ui.element.style.height = '100%';
         editor.ui.element.style.width = '100%';
 
+        editor.editing.view.focus();
+
         ckInstance = editor;
+        ckInstance.setData(data);
+
+        resolve && resolve(ckInstance);
       })
       .catch(e => {
         throw new Error('Error loading CKEditor of target ' + targetId + ': ' + e);
@@ -51,32 +68,49 @@ H5P.CKEditor = (function (EventDispatcher, $) {
     }
 
     self.create = function () {
-      if (!window.ClassicEditor) {
-        // Load the CKEditor script if it hasn't been loaded yet
-        const script = document.createElement('script');
-        script.src = H5P.getLibraryPath('H5P.CKEditor-2.0') + '/build/ckeditor.js';
-        script.onload = () => initCKEditor();
-        document.body.appendChild(script);
+      if (!window.ClassicEditor && !H5P.CKEditor.load) {
+        H5P.CKEditor.load = new Promise((resolve, reject) => {
+          // Load the CKEditor script if it hasn't been loaded yet
+          const script = document.createElement('script');
+          script.src = H5P.getLibraryPath('H5P.CKEditor-1.0') + '/build/ckeditor.js';
+          script.onload = () => {
+            initCKEditor(resolve);
+          }
+          script.onerror = reject;
+          document.body.appendChild(script);
+        }).then(() => {
+          setState(CREATED)
+        })
       }
       else {
-        initCKEditor();
+        if (state !== CREATED) {
+          H5P.CKEditor.load.then(() => initCKEditor());
+        }
+        else {
+          initCKEditor()
+        }
       }
     }
 
     self.destroy = function () {
-      if (self.exists()) {
-        ckInstance.destroy()
+      // Need to check if destroy() is not already in process
+      // since multiple simultaneous calls can happen
+      if (state !== DESTROYING && ckInstance) {
+        data = self.getData();
+        setState(DESTROYING);
+
+        ckInstance.destroy().then(() => {
+          setState(DESTROYED);
+          ckInstance = undefined;
+        }).catch( error => {
+          console.log( error );
+      });
       }
     }
 
-    // Do I have a CK instance?
-    self.exists = function () {
-      return ckInstance !== undefined;
-    };
-
     // Get the current CK data
     self.getData = function () {
-      return self.exists() ? ckInstance.getData().trim() : (data ? data : '');
+      return ckInstance ? ckInstance.getData().trim() : (data ? data : '');
     }
 
     self.resize = function (width, height) {
