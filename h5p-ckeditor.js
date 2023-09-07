@@ -7,7 +7,7 @@ H5P.CKEditor = (function (EventDispatcher, $) {
     toolbar: [
       'style', 'heading', '|', 'bold', 'italic', 'underline', 'strikeThrough', '|', 'link', '|', 'insertTable'
     ],
-  }
+  };
 
   const DESTROYED = 0;
   const CREATED = 1;
@@ -50,21 +50,21 @@ H5P.CKEditor = (function (EventDispatcher, $) {
 
       // Create the CKEditor instance
       window.ClassicEditor.create($target.get(0), config)
-      .then(editor => {
-        editor.ui.element.classList.add("h5p-ckeditor");
-        editor.ui.element.style.height = '100%';
-        editor.ui.element.style.width = '100%';
+        .then(editor => {
+          editor.ui.element.classList.add("h5p-ckeditor");
+          editor.ui.element.style.height = '100%';
+          editor.ui.element.style.width = '100%';
 
-        editor.editing.view.focus();
+          editor.editing.view.focus();
 
-        ckInstance = editor;
-        ckInstance.setData(data);
+          ckInstance = editor;
+          ckInstance.setData(data);
 
-        resolve && resolve(ckInstance);
-      })
-      .catch(e => {
-        throw new Error('Error loading CKEditor of target ' + targetId + ': ' + e);
-      });
+          resolve && resolve(ckInstance);
+        })
+        .catch(e => {
+          throw new Error('Error loading CKEditor of target ' + targetId + ': ' + e);
+        });
     }
 
     self.create = function () {
@@ -75,19 +75,20 @@ H5P.CKEditor = (function (EventDispatcher, $) {
           script.src = H5P.getLibraryPath('H5P.CKEditor-1.0') + '/build/ckeditor.js';
           script.onload = () => {
             initCKEditor(resolve);
-          }
+          };
           script.onerror = reject;
           document.body.appendChild(script);
-        }).then(() => {
-          setState(CREATED)
         })
+        .then(() => {
+          setState(CREATED)
+        });
       }
       else {
         if (state !== CREATED) {
           H5P.CKEditor.load.then(() => initCKEditor());
         }
         else {
-          initCKEditor()
+          initCKEditor();
         }
       }
     }
@@ -99,23 +100,21 @@ H5P.CKEditor = (function (EventDispatcher, $) {
         data = self.getData();
         setState(DESTROYING);
 
-        ckInstance.destroy().then(() => {
-          setState(DESTROYED);
-          ckInstance = undefined;
-        }).catch( error => {
-          console.log( error );
-      });
+        ckInstance.destroy()
+          .then(() => {
+            setState(DESTROYED);
+            ckInstance = undefined;
+          })
+          .catch( error => {
+            console.log( error );
+          });
       }
     }
 
     // Get the current CK data
     self.getData = function () {
       return ckInstance ? ckInstance.getData().trim() : (data ? data : '');
-    }
-
-    self.resize = function (width, height) {
-      // No need this anymore since we have CSS set
-    }
+    };
   }
 
   // Extends the event dispatcher
