@@ -2,11 +2,17 @@ H5P.CKEditor = (function (EventDispatcher, $) {
 
   const DefaultCKEditorConfig = {
     removePlugins: ['MathType'],
+    updateSourceElementOnDestroy: true,
+    startupFocus: true,
     toolbar: [
       'style', 'heading', '|', 'bold', 'italic', 'underline', 'strikeThrough', '|', 'link', '|', 'insertTable'
     ],
-  }
-  
+  };
+
+  const DESTROYED = 0;
+  const CREATED = 1;
+  const DESTROYING = 2;
+
   /**
    * Constructor
    * @param {string} targetId The id of the DOM lement beeing replaced by CK
@@ -23,65 +29,96 @@ H5P.CKEditor = (function (EventDispatcher, $) {
 
     let self = this;
     let ckInstance;
-    const data = initialContent;
+    let data = initialContent;
+
+    let state = DESTROYED;
 
     config = config || DefaultCKEditorConfig;
     config.defaultLanguage = config.language = languageCode;
 
-    const initCKEditor = function () {
+    const setState = function (newState) {
+      state = newState;
+    };
+
+    const initCKEditor = function (resolve) {
       let $target = $('#' + targetId);
 
       // Abort if target is gone
-      if(!$target.is(':visible')) {
-        return ;
+      if (!$target.is(':visible')) {
+        return;
       }
 
       // Create the CKEditor instance
       window.ClassicEditor.create($target.get(0), config)
-      .then(editor => {
-        editor.ui.element.classList.add("h5p-ckeditor");
-        editor.ui.element.style.height = '100%';
-        editor.ui.element.style.width = '100%';
+        .then(editor => {
+          editor.ui.element.classList.add("h5p-ckeditor");
+          editor.ui.element.style.height = '100%';
+          editor.ui.element.style.width = '100%';
 
-        ckInstance = editor;
-      })
-      .catch(e => {
-        throw new Error('Error loading CKEditor of target ' + targetId + ': ' + e);
-      });
-    }
+          editor.editing.view.focus();
+
+          ckInstance = editor;
+          ckInstance.setData(data);
+
+          resolve && resolve(ckInstance);
+        })
+        .catch(e => {
+          throw new Error('Error loading CKEditor of target ' + targetId + ': ' + e);
+        });
+    };
 
     self.create = function () {
-      if (!window.ClassicEditor) {
-        // Load the CKEditor script if it hasn't been loaded yet
-        const script = document.createElement('script');
-        script.src = H5P.getLibraryPath('H5P.CKEditor-2.0') + '/build/ckeditor.js';
-        script.onload = () => initCKEditor();
-        document.body.appendChild(script);
+      if (!window.ClassicEditor && !H5P.CKEditor.load) {
+        H5P.CKEditor.load = new Promise((resolve, reject) => {
+          // Load the CKEditor script if it hasn't been loaded yet
+          const script = document.createElement('script');
+          script.src = H5P.getLibraryPath('H5P.CKEditor-1.0') + '/build/ckeditor.js';
+          script.onload = () => {
+            initCKEditor(resolve);
+          };
+          script.onerror = reject;
+          document.body.appendChild(script);
+        })
+        .then(() => {
+          setState(CREATED)
+        });
       }
       else {
-        initCKEditor();
+        if (state !== CREATED) {
+          H5P.CKEditor.load.then(() => initCKEditor());
+        }
+        else {
+          initCKEditor();
+        }
       }
-    }
+    };
 
     self.destroy = function () {
-      if (self.exists()) {
-        ckInstance.destroy()
-      }
-    }
+      // Need to check if destroy() is not already in process
+      // since multiple simultaneous calls can happen
+      if (state !== DESTROYING && ckInstance) {
+        data = self.getData();
+        setState(DESTROYING);
 
-    // Do I have a CK instance?
-    self.exists = function () {
-      return ckInstance !== undefined;
+        ckInstance.destroy()
+          .then(() => {
+            setState(DESTROYED);
+            ckInstance = undefined;
+          })
+          .catch( error => {
+            console.log( error );
+          });
+      }
     };
 
     // Get the current CK data
     self.getData = function () {
-      return self.exists() ? ckInstance.getData().trim() : (data ? data : '');
-    }
+      return ckInstance ? ckInstance.getData().trim() : (data ? data : '');
+    };
 
     self.resize = function (width, height) {
-      // No need this anymore since we have CSS set
-    }
+      // This method must exist, but we don't have to do anything
+    };
   }
 
   // Extends the event dispatcher
