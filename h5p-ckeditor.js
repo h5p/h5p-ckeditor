@@ -65,7 +65,7 @@ H5P.CKEditor = (function (EventDispatcher, $) {
         .catch(e => {
           throw new Error('Error loading CKEditor of target ' + targetId + ': ' + e);
         });
-    }
+    };
 
     self.create = function () {
       if (!window.ClassicEditor && !H5P.CKEditor.load) {
@@ -91,7 +91,7 @@ H5P.CKEditor = (function (EventDispatcher, $) {
           initCKEditor();
         }
       }
-    }
+    };
 
     self.destroy = function () {
       // Need to check if destroy() is not already in process
@@ -109,11 +109,15 @@ H5P.CKEditor = (function (EventDispatcher, $) {
             console.log( error );
           });
       }
-    }
+    };
 
     // Get the current CK data
     self.getData = function () {
       return ckInstance ? ckInstance.getData().trim() : (data ? data : '');
+    };
+
+    self.resize = function (width, height) {
+      // This method must exist, but we don't have to do anything
     };
   }
 
