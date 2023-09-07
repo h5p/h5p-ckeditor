@@ -12,7 +12,7 @@ H5P.CKEditor = (function (EventDispatcher, $) {
   const DESTROYED = 0;
   const CREATED = 1;
   const DESTROYING = 2;
-  
+
   /**
    * Constructor
    * @param {string} targetId The id of the DOM lement beeing replaced by CK
@@ -33,7 +33,7 @@ H5P.CKEditor = (function (EventDispatcher, $) {
 
     let state = DESTROYED;
 
-    config = DefaultCKEditorConfig;
+    config = config || DefaultCKEditorConfig;
     config.defaultLanguage = config.language = languageCode;
 
     const setState = function (newState) {
