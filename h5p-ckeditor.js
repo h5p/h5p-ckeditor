@@ -5,7 +5,7 @@ H5P.CKEditor = (function (EventDispatcher, $) {
     updateSourceElementOnDestroy: true,
     startupFocus: true,
     toolbar: [
-      'style', 'heading', '|', 'bold', 'italic', 'underline', 'strikeThrough', '|', 'link', '|', 'insertTable'
+      'heading', '|', 'bold', 'italic', 'underline', 'strikeThrough', '|', 'link', '|', 'insertTable'
     ],
   };
 
