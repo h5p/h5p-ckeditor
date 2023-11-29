@@ -47,19 +47,23 @@ main .ck-editor[role='application'] .ck.ck-content,
 .editor-container {
 	display: flex;
 	flex-direction: row;
-    flex-wrap: nowrap;
-    position: relative;
+	flex-wrap: nowrap;
+	position: relative;
 	width: 100%;
 	justify-content: center;
 }
 
+.editor-container--with-sidebar > .ck.ck-editor {
+	width: calc( 100% - var(--ck-sample-sidebar-width) );
+}
+
 /* --------- DECOUPLED (DOCUMENT) BUILD. ---------------------------------------------*/
-body[data-editor='DecoupledDocumentEditor'] .document-editor__toolbar {
+body[data-editor='DecoupledEditor'] .document-editor__toolbar {
 	width: 100%;
 }
 
-body[data-editor='DecoupledDocumentEditor'] .collaboration-demo__editable,
-body[data-editor='DecoupledDocumentEditor'] .row-editor .editor {
+body[data-editor='DecoupledEditor'] .collaboration-demo__editable,
+body[data-editor='DecoupledEditor'] .row-editor .editor {
 	/* A pixel is added for each of the border. */
 	width: calc(21cm + 2px);
 	min-height: calc(29.7cm + 2px);
@@ -73,7 +77,7 @@ body[data-editor='DecoupledDocumentEditor'] .row-editor .editor {
 	box-sizing: border-box;
 }
 
-body[data-editor='DecoupledDocumentEditor'] .row-editor {
+body[data-editor='DecoupledEditor'] .row-editor {
 	display: flex;
 	position: relative;
 	justify-content: center;
@@ -84,7 +88,7 @@ body[data-editor='DecoupledDocumentEditor'] .row-editor {
 	max-height: 700px;
 }
 
-body[data-editor='DecoupledDocumentEditor'] .sidebar {
+body[data-editor='DecoupledEditor'] .sidebar {
 	background: transparent;
 	border: 0;
 	box-shadow: none;
@@ -324,6 +328,8 @@ body[data-editor='InlineEditor'] .collaboration-demo__row {
 
 .revision-viewer-container {
     display: none;
+    max-width: 100%;
+    word-wrap: break-word;
 }
 
 .revision-viewer-sidebar {
