@@ -38,6 +38,7 @@
           border-style: none;
           border-color:  #494949;
           border-bottom-style: solid;
+          height: auto;
         }
 
         td {
