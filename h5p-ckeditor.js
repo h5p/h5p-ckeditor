@@ -7,6 +7,33 @@ H5P.CKEditor = (function (EventDispatcher, $) {
     toolbar: [
       'heading', '|', 'bold', 'italic', 'underline', 'strikeThrough', '|', 'link', '|', 'insertTable'
     ],
+    table: {
+      contentToolbar: [
+        'toggleTableCaption',
+        'tableColumn',
+        'tableRow',
+        'mergeTableCells',
+        'tableProperties',
+        'tableCellProperties'
+      ],
+      tableProperties: {
+        defaultProperties: {
+          borderStyle: 'underline',
+          borderWidth: '0.083em',
+          borderColor: '#494949',
+          padding: '0',
+          alignment: 'left'
+        }
+      },
+      tableCellProperties: {
+        defaultProperties: {
+          borderStyle: 'underline',
+          borderWidth: '0.083em',
+          borderColor: '#494949',
+          padding: '1px'
+        }
+      }
+    }
   };
 
   const DESTROYED = 0;
