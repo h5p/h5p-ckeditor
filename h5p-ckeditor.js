@@ -21,13 +21,6 @@ H5P.CKEditor = (function (EventDispatcher, $) {
         { model: 'normal', view: 'div', title: 'Normal (DIV)' }
       ]
     },
-    contentCss: {
-      '.ck': {
-        'background-color': 'green !important',
-        'max-height': '40%',
-        'overflow-y': 'auto'
-      }
-    },
     table: {
       contentToolbar: [
         'toggleTableCaption',

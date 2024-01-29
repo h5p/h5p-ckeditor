@@ -18,11 +18,6 @@
     overflow-y: scroll;
   }
 
-  .ck-dropdown-list {
-    max-height: 40%;
-    overflow-y: auto;
-  }
-
   .ck-content {
     pre {
       background: initial;
