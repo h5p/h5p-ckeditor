@@ -12,7 +12,8 @@
 
 /* Inside ckeditor, needed for changes to default */
 .ck {
-  .ck-text-fragment-language-dropdown .ck-dropdown__panel {
+  .ck-text-fragment-language-dropdown .ck-dropdown__panel,
+  .ck-heading-dropdown .ck-dropdown__panel {
     max-height: 20em;
     overflow-y: scroll;
   }
