@@ -7,6 +7,12 @@ H5P.CKEditor = (function (EventDispatcher, $) {
     toolbar: [
       'heading', '|', 'bold', 'italic', 'underline', 'strikeThrough', '|', 'link', '|', 'insertTable'
     ],
+    link: {
+      // Automatically add target="_blank" and rel="noopener noreferrer" to all external links.
+      addTargetToExternalLinks: true,
+      // Automatically add protocol if not present
+      defaultProtocol: 'http://',
+    },
     heading: {
       options: [
         { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
