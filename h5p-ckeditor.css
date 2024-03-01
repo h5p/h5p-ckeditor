@@ -66,3 +66,7 @@
     }
   }
 }
+
+.ck-powered-by-balloon {
+  display: none !important;
+}
