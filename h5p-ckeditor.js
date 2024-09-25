@@ -1,108 +1,64 @@
 H5P.CKEditor = (function (EventDispatcher, $) {
 
-  var DefaultCKEditorConfig = {
-    customConfig: '',
-    toolbarGroups: [
-      { name: 'document', groups: [ 'mode', 'document', 'doctools' ] },
-      { name: 'styles', groups: [ 'styles' ] },
-      { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
-      { name: 'editing', groups: [ 'find', 'selection', 'editing' ] },
-      { name: 'forms', groups: [ 'forms' ] },
-      { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi', 'paragraph' ] },
-      { name: 'colors', groups: [ 'colors' ] },
-      { name: 'links', groups: [ 'links' ] },
-      { name: 'insert', groups: [ 'insert' ] },
-      { name: 'tools', groups: [ 'tools' ] },
-      { name: 'others', groups: [ 'others' ] },
-      { name: 'about', groups: [ 'about' ] }
-    ],
+  const DefaultCKEditorConfig = {
+    removePlugins: ['MathType'],
+    updateSourceElementOnDestroy: true,
     startupFocus: true,
-    width: '100%',
-    resize_enabled: false,
-    linkShowAdvancedTab: false,
-    linkShowTargetTab: false,
-    forcePasteAsPlainText: true,
-    removeButtons: 'Blockquote,Source,HorizontalRule,RemoveFormat,SpecialChar,Maximize,Image,Cut,Copy,Paste,Undo,Redo,Anchor,Subscript,Superscript,Font,BulletedList,NumberedList,Outdent,Indent,About'
-  };
-
-  // Contains a "global" mapping between editor names and callback functions
-  var listeners = {};
-
-  // Have we setup our global CK Editor listener?
-  var ckEditorListenerInitialized = false;
-
-  /**
-   * Loads the CK Editor dynamically
-   * @param  {string}       basePath   The basepath for ckeditor files
-   * @param  {string}       editorName The editor name
-   * @param  {H5P.CKEditor} instance   The CKEditor instance
-   * @return {undefined}
-   */
-  var loadCKEditor = function (basePath, editorName, instance) {
-    listeners[editorName] = instance;
-
-    var loaded = function () {
-      // Make sure this is only done once.
-      if (!ckEditorListenerInitialized) {
-        var listener;
-        ckEditorListenerInitialized = true;
-        var CKEDITOR = window.CKEDITOR;
-
-        CKEDITOR.verbosity = 0;
-
-        // Make sure contenteditable divs are not automatically made into CKs
-        CKEDITOR.disableAutoInline = true;
-
-        // An editor instance is created
-        CKEDITOR.on('instanceReady', function(event) {
-          listener = listeners[event.editor.name];
-          if (listener) {
-            listener.trigger('created');
-          }
-        });
-
-        // An editor instance is destroyed
-        CKEDITOR.on('instanceDestroyed', function(event) {
-          listener = listeners[event.editor.name];
-          if (listener) {
-            listener.trigger('destroyed');
-          }
-        });
-
-        // Listen to dialog definitions
-        CKEDITOR.on('dialogDefinition', function(event) {
-          var dialogDefinition = event.data.definition;
-
-          // Disable dialog resize
-          dialogDefinition.resizable = CKEDITOR.DIALOG_RESIZE_NONE;
-
-          listener = listeners[event.editor.name];
-          if (listener) {
-            listener.trigger('dialogDefinition', {
-              dialog: dialogDefinition.dialog
-            });
-          }
-        });
+    toolbar: [
+      'heading', '|', 'bold', 'italic', 'underline', 'strikeThrough', '|', 'link', '|', 'insertTable'
+    ],
+    link: {
+      // Automatically add target="_blank" and rel="noopener noreferrer" to all external links.
+      addTargetToExternalLinks: true,
+      // Automatically add protocol if not present
+      defaultProtocol: 'http://',
+    },
+    heading: {
+      options: [
+        { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+        { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+        { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+        { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' },
+        { model: 'heading4', view: 'h4', title: 'Heading 4', class: 'ck-heading_heading4' },
+        { model: 'heading5', view: 'h5', title: 'Heading 5', class: 'ck-heading_heading5' },
+        { model: 'heading6', view: 'h6', title: 'Heading 6', class: 'ck-heading_heading6' },
+        { model: 'formatted', view: 'pre', title: 'Formatted' },
+        { model: 'address', view: 'address', title: 'Address' },
+        { model: 'normal', view: 'div', title: 'Normal (DIV)' }
+      ]
+    },
+    table: {
+      contentToolbar: [
+        'toggleTableCaption',
+        'tableColumn',
+        'tableRow',
+        'mergeTableCells',
+        'tableProperties',
+        'tableCellProperties'
+      ],
+      tableProperties: {
+        defaultProperties: {
+          borderStyle: 'underline',
+          borderWidth: '0.083em',
+          borderColor: '#494949',
+          padding: '0',
+          alignment: 'left'
+        }
+      },
+      tableCellProperties: {
+        defaultProperties: {
+          borderStyle: 'underline',
+          borderWidth: '0.083em',
+          borderColor: '#494949',
+          padding: '1px'
+        }
       }
-
-      instance.trigger('loaded');
-    };
-
-    if (window.CKEDITOR) {
-      return loaded();
     }
-
-    var script = document.createElement('script');
-    script.onload = loaded;
-    script.src = basePath + 'ckeditor.js';
-
-    document.body.appendChild(script);
   };
 
-  var DESTROYED = 0;
-  var CREATING = 1;
-  var CREATED = 2;
-  var DESTROYING = 3;
+  const DESTROYED = 0;
+  const CREATED = 1;
+  const DESTROYING = 2;
 
   /**
    * Constructor
@@ -118,162 +74,98 @@ H5P.CKEditor = (function (EventDispatcher, $) {
   function CKEditor(targetId, languageCode, $dialogContainer, initialContent, config) {
     EventDispatcher.call(this);
 
-    var self = this;
-    var ckInstance;
-    var currentCkEditorDialog;
-    var state = DESTROYED;
-    var data = initialContent;
+    let self = this;
+    let ckInstance;
+    let data = initialContent;
+
+    let state = DESTROYED;
 
     config = config || DefaultCKEditorConfig;
     config.defaultLanguage = config.language = languageCode;
 
-    // CK is ready
-    var loaded = function () {
-      if (state === CREATING || state === CREATED) {
-        return;
-      }
-      else if (state === DESTROYING) {
-        return self.once('destroyed', loaded);
-      }
-
-      setState(CREATING);
-
-      // This timeout is needed to get ckeditor work in dialogs in IV. CKEDITOR
-      // does not find the DOM element without this.
-      setTimeout(function () {
-        var $target = $('#' + targetId);
-
-        // Abort if target is gone
-        if(!$target.is(':visible')) {
-          return setState(DESTROYED);
-        }
-
-        // Create the CKEditor instance
-        ckInstance = window.CKEDITOR.replace($target.get(0), config);
-        ckInstance.setData(data);
-      }, 50);
-    };
-
-    var setState = function (newState) {
+    const setState = function (newState) {
       state = newState;
     };
 
-    // Create the CKEditor
-    self.create = function () {
-      loadCKEditor(H5P.getLibraryPath('H5P.CKEditor-1.0') + '/ckeditor/', targetId, self);
-    };
+    const initCKEditor = function (resolve) {
+      let $target = $('#' + targetId);
 
-    // Destroy the CKEditor
-    self.destroy = function () {
-      if (state === DESTROYING || !self.exists()) {
+      // Abort if target is gone
+      if (!$target.is(':visible')) {
         return;
       }
-      else if (state === CREATING) {
-        // If CKEditor is creating the instance, we need to wait for it to
-        // finish before destroying it
-        return self.once('created', self.destroy.bind(self));
+
+      // Create the CKEditor instance
+      window.ClassicEditor.create($target.get(0), config)
+        .then(editor => {
+          editor.ui.element.classList.add("h5p-ckeditor");
+          editor.ui.element.style.height = '100%';
+          editor.ui.element.style.width = '100%';
+
+          editor.editing.view.focus();
+
+          ckInstance = editor;
+          ckInstance.setData(data);
+
+          resolve && resolve(ckInstance);
+        })
+        .catch(e => {
+          throw new Error('Error loading CKEditor of target ' + targetId + ': ' + e);
+        });
+    };
+
+    self.create = function () {
+      if (!window.ClassicEditor && !H5P.CKEditor.load) {
+        H5P.CKEditor.load = new Promise((resolve, reject) => {
+          // Load the CKEditor script if it hasn't been loaded yet
+          const script = document.createElement('script');
+          script.src = H5P.getLibraryPath('H5P.CKEditor-1.0') + '/build/ckeditor.js';
+          script.onload = () => {
+            initCKEditor(resolve);
+          };
+          script.onerror = reject;
+          document.body.appendChild(script);
+        })
+        .then(() => {
+          setState(CREATED)
+        });
       }
-
-      if (self.exists()) {
-        data = self.getData();
-
-        setState(DESTROYING);
-
-        if (currentCkEditorDialog) {
-          currentCkEditorDialog.hide();
-          currentCkEditorDialog = undefined;
+      else {
+        if (state !== CREATED) {
+          H5P.CKEditor.load.then(() => initCKEditor());
         }
-
-        if (ckInstance) {
-          ckInstance.resetDirty();
-          ckInstance.destroy();
-          ckInstance = undefined;
+        else {
+          initCKEditor();
         }
       }
     };
 
-    // Do I have a CK instance?
-    self.exists = function () {
-      return ckInstance !== undefined;
+    self.destroy = function () {
+      // Need to check if destroy() is not already in process
+      // since multiple simultaneous calls can happen
+      if (state !== DESTROYING && ckInstance) {
+        data = self.getData();
+        setState(DESTROYING);
+
+        ckInstance.destroy()
+          .then(() => {
+            setState(DESTROYED);
+            ckInstance = undefined;
+          })
+          .catch( error => {
+            console.log( error );
+          });
+      }
     };
 
     // Get the current CK data
     self.getData = function () {
-      return self.exists() ? ckInstance.getData().trim() : (data ? data : '');
+      return ckInstance ? ckInstance.getData().trim() : (data ? data : '');
     };
 
-    // Let's resize
     self.resize = function (width, height) {
-      if (self.exists()) {
-        // In some scenarios resize throws an exception. No problems seen
-        try {
-          ckInstance.resize(width ? width : config.width, height ? height : config.height, false, true);
-        }
-        catch (e) {
-          // Do nothing!
-        }
-      }
+      // This method must exist, but we don't have to do anything
     };
-
-    /**
-     * Resize the CK Editor Dialogs
-     * @param  {CKEDITOR.Dialog} dialog The dialog to resize
-     * @returns {undefined}
-     */
-    var resizeDialog = function (dialog) {
-      if (ckInstance === undefined) {
-        return;
-      }
-
-      // Not nice to get the parent's $container, but we dont have any nice
-      // ways of doing this
-      var maxHeight = $dialogContainer.height();
-      var dialogElement = dialog.getElement();
-      var dialogBodyElement = dialogElement.find('.cke_dialog_body').$[0];
-      $(dialogBodyElement).css({
-        'max-height': maxHeight,
-        'overflow-y': 'scroll'
-      });
-
-      var dialogContents = dialogElement.find('.cke_dialog_contents').$[0];
-      $(dialogContents).css('margin-top', 0);
-
-      // Resize link dialog
-      var dialogContentsBody = dialogElement.find('.cke_dialog_contents_body').$[0];
-      $(dialogContentsBody).css('height', 'inherit');
-
-      // CKEditor is doing some repositioning inside a timeout. Therefore we need
-      // this with a higher value. :(
-      setTimeout(function () {
-        dialog.move(dialog.getPosition().x, $dialogContainer.offset().top);
-      }, 50);
-    };
-
-    /**
-     * Setup CK Editor dialogs
-     * @param {CKEDITOR.Dialog} dialog The dialog
-     * @returns {undefined}
-     */
-    var setupDialog = function (event) {
-      var dialog = event.data.dialog;
-      // Prevent overflowing out of H5P iframe
-      dialog.on('show', function () {
-        currentCkEditorDialog = this;
-        self.on('resize', resizeDialog.bind(self, this));
-        resizeDialog(this);
-      });
-
-      dialog.on('hide', function () {
-        self.off('resize', resizeDialog);
-        currentCkEditorDialog = undefined;
-      });
-    };
-
-    // Setup listeners
-    self.on('destroyed', setState.bind(self, DESTROYED));
-    self.on('created', setState.bind(self, CREATED));
-    self.on('loaded', loaded);
-    self.on('dialogDefinition', setupDialog);
   }
 
   // Extends the event dispatcher

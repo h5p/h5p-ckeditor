@@ -1,0 +1,10 @@
+node_modules
+src
+.git
+.h5pignore
+webpack.config.js
+README.md
+package.json
+ckeditor
+tsconfig.json
+tsconfig.types.json
