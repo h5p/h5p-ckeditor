@@ -115,7 +115,10 @@ H5P.CKEditor = (function (EventDispatcher, $) {
     };
 
     self.create = function () {
-      if (!window.ClassicEditor && !H5P.CKEditor.load) {
+      if (window.ClassicEditor) {
+        initCKEditor();
+      }
+      else if (!H5P.CKEditor.load) {
         H5P.CKEditor.load = new Promise((resolve, reject) => {
           // Load the CKEditor script if it hasn't been loaded yet
           const script = document.createElement('script');
