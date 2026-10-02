@@ -8,7 +8,8 @@
   "main": "./build/ckeditor.js",
   "types": "./build/ckeditor.d.ts",
   "overrides": {
-    "lodash-es": "4.18.1"
+    "lodash-es": "4.18.1",
+    "serialize-javascript": "7.0.5"
   },
   "dependencies": {
     "@ckeditor/ckeditor5-alignment": "43.3.0",
